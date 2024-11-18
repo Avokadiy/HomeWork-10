@@ -1,15 +1,3 @@
-// function test() {
-//     fetch('https://fakestoreapi.com/products')
-//         .then(response => response.json())
-//         .then(data => {
-//             console.log('Данные:', data);
-
-//         })
-//         .catch(error => console.error('Ошибка', error));
-// }
-
-// test()
-
 async function fetchData() {
 
     const response = await fetch('https://fakestoreapi.com/products');
@@ -26,51 +14,68 @@ async function fetchData() {
 
 function createProductDom(product) {
     const item = document.createElement('div');
+    item.className = "market_item";
 
-    item.className = 'market_item';
-    item.innerHTML = `
-        <img class="item_img" src="${product.image}" alt="Картинка товара">
-        <div class="item_title">${product.title}</div>
-        <div class="item_price">$${product.price}</div>
-        <div class="item_description">${product.description}</div>
-        <button data-id="${product.id}" class="item_add">Add to cart</button>
-    `
+    const descriptionDOM = document.createElement("div");
+    descriptionDOM.className = "item_description"
+    descriptionDOM.innerText = product.description;
+
+    const priceDOM = document.createElement("div");
+    priceDOM.className = "item_price"
+    priceDOM.innerText = product.price;
+
+    const titleDOM = document.createElement("div");
+    titleDOM.className = "item_title"
+    titleDOM.innerText = product.title;
+
+    const imgDOM = document.createElement("img");
+    imgDOM.className = "item_img";
+    imgDOM.src = product.image;
+    
+    const buttonDOM = document.createElement("button");
+    buttonDOM.className = "item_add";
+    buttonDOM.innerText = "Add to cart";
+    buttonDOM.addEventListener('click', () => {
+        addToCart(product);
+    });
 
     const itemsDOM = document.querySelector('.market');
 
+    item.appendChild(imgDOM);
+    item.appendChild(titleDOM);
+    item.appendChild(priceDOM);
+    item.appendChild(descriptionDOM);
+    item.appendChild(buttonDOM);
     itemsDOM.appendChild(item);
 }
 
-
-
 async function main() {
     await fetchData();
-    
-    const itemButtons = document.querySelectorAll(".item_add");
-    itemButtons.forEach((itemButton) => {
-        itemButton.addEventListener('click', addToCart);
-    })
 }
 
 main()
 
-async function addToCart() {
+async function addToCart(product) {
+
+    let date = new Date().toISOString();
     const response = await fetch('https://fakestoreapi.com/carts', {
         method: "POST",
         body: JSON.stringify({
             userId: 1,
-            date: Date.now(),
-            products: [{productId:"data-id", quantity:1}]
+            date: date,
+            products: [{productId: product.id, quantity: 1}]
         })
     })
 
     const data = await response.json();
 
-    console.log(data);
-
     if (!response.ok) {
         console.log(data.errors);
         return;
+    }
+
+    if (response.status === 200) {
+        console.log("Товар", product.title, "добавлен в корзину");
     }
 }
 

@@ -62,8 +62,9 @@ header {
 }
 
 .item_img {
+    object-fit: contain;
     height: 200px;
-    width: 200px
+    width: 200px;
 }
 
 .item_title {
