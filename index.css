@@ -103,7 +103,8 @@ header {
 }
 
 .item_add:hover,
-.item_remove:hover {
+.item_remove:hover,
+.loadButton:hover {
     opacity: 50%;
 }
 
@@ -131,4 +132,14 @@ header {
 .notification_add.active,
 .notification_text.active {
     display: block;
+}
+
+.loadButton {
+    display: block;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: lightblue;
+    border: none;
+    border-radius: 20px;
+    font-size: 25px;
 }

@@ -1,6 +1,6 @@
-async function fetchData() {
-
-    const response = await fetch('https://fakestoreapi.com/products');
+async function fetchData(x) {
+    console.log(x);
+    const response = await fetch(`https://fakestoreapi.com/products?limit=${x}`);
     const data = await response.json();
 
     if (!response.ok) {
@@ -11,6 +11,17 @@ async function fetchData() {
 
     return data;
 }
+function loadExtraItems() {
+    const loadButton = document.querySelector('.loadButton');
+    loadButton.addEventListener('click', () => {
+        let x = 6;
+        if (x / 6) {
+            for (x ; x / 6; x++) {
+            return x;
+        }}
+    });
+}
+
 
 async function createProductDOM(product) {
 
@@ -89,7 +100,8 @@ async function createProductCartDOM(product) {
 }
 
 async function main() {
-    const products = await fetchData();
+
+    const products = await fetchData(loadExtraItems);
     const cart = await getUserCart(products);
     const outOfCart = products.filter(e => cart.findIndex(i => i.id == e.id) === -1);
 
@@ -98,35 +110,6 @@ async function main() {
 }
 
 main()
-
-// async function removeFromCart(product) {
-//     let date = new Date().toISOString();
-//     const response = await fetch('https://fakestoreapi.com/carts/2', {
-//         method: "DELETE",
-//         body: JSON.stringify({
-//             userId: 1,
-//             date: date,
-//             products: [{
-//                 productId: product.id,
-//                 quantity: 0
-//             }]
-//         })
-//     })
-
-//     const data = await response.json();
-
-//     if (response.ok) {
-//         console.log(data.errors);
-//         return;
-//     }
-
-//     if (response.status === 200) {
-//         let text = `Товар ${product.title} удалён из корзины.`;
-
-//         notification(text);
-//     }
-
-// }
 
 async function addToCart(product) {
 
@@ -175,7 +158,7 @@ async function getUserCart(products) {
     const data = await response.json();
 
     const cartArray = transformArrays(data.products, products);
-    // return data?.products ?? [];
+
     return cartArray;
 }
 
