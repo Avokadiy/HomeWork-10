@@ -1,27 +1,16 @@
-async function fetchData(x) {
-    console.log(x);
-    const response = await fetch(`https://fakestoreapi.com/products?limit=${x}`);
-    const data = await response.json();
+async function fetchData(numberOfItems) {
+    try {
+        const response = await fetch(`https://fakestoreapi.com/products?limit=${numberOfItems}`);
+        if (!response.ok) {
+            throw new Error('Сетевая ошибка');
+        }
+        const data = await response.json();
 
-    if (!response.ok) {
-        console.log(data.errors);
-
-        return;
+        return data;
+    } catch (error) {
+        console.error('Ошибка', error)
     }
-
-    return data;
 }
-function loadExtraItems() {
-    const loadButton = document.querySelector('.loadButton');
-    loadButton.addEventListener('click', () => {
-        let x = 6;
-        if (x / 6) {
-            for (x ; x / 6; x++) {
-            return x;
-        }}
-    });
-}
-
 
 async function createProductDOM(product) {
 
@@ -99,44 +88,64 @@ async function createProductCartDOM(product) {
     itemsDOM.appendChild(item);
 }
 
-async function main() {
+function loadItems(numberOfItems) {
+    numberOfItems = numberOfItems + 6;
 
-    const products = await fetchData(loadExtraItems);
-    const cart = await getUserCart(products);
-    const outOfCart = products.filter(e => cart.findIndex(i => i.id == e.id) === -1);
+    return numberOfItems;
+}
+
+async function main() {
+    const loadButton = document.querySelector('.loadButton');
+    const market = document.querySelector('.market');
+    let numberOfItems = 6;
+
+    let products = await fetchData(numberOfItems);
+    let cart = await getUserCart(products);
+    let outOfCart = products.filter(e => cart.findIndex(i => i.id == e.id) === -1);
 
     outOfCart.forEach(createProductDOM);
     cart.forEach(createProductCartDOM);
+
+    loadButton.addEventListener('click', async () => {
+        market.innerHTML = '';
+
+        numberOfItems = loadItems(numberOfItems);
+        products = await fetchData(numberOfItems);
+        outOfCart = products.filter(e => cart.findIndex(i => i.id == e.id) === -1);
+        outOfCart.forEach(createProductDOM);
+        cart.forEach(createProductCartDOM);
+    })
 }
 
 main()
 
 async function addToCart(product) {
-
-    let date = new Date().toISOString();
-    const response = await fetch('https://fakestoreapi.com/carts', {
-        method: "POST",
-        body: JSON.stringify({
-            userId: 1,
-            date: date,
-            products: [{
-                productId: product.id,
-                quantity: 1
-            }]
+    try {
+        let date = new Date().toISOString();
+        const response = await fetch('https://fakestoreapi.com/carts', {
+            method: "POST",
+            body: JSON.stringify({
+                userId: 1,
+                date: date,
+                products: [{
+                    productId: product.id,
+                    quantity: 1
+                }]
+            })
         })
-    })
 
-    const data = await response.json();
+        if (!response.ok) {
+            throw new Error('Сетевая ошибка');
+        }
 
-    if (!response.ok) {
-        console.log(data.errors);
-        return;
-    }
+        if (response.status === 200) {
+            let text = `Товар ${product.title} добавлен в корзину.`;
+    
+            notification(text);
+        }
 
-    if (response.status === 200) {
-        let text = `Товар ${product.title} добавлен в корзину.`;
-
-        notification(text);
+    } catch (error) {
+        console.error('Ошибка', error);
     }
 }
 
@@ -154,12 +163,21 @@ function notification(text) {
 }
 
 async function getUserCart(products) {
-    const response = await fetch('https://fakestoreapi.com/carts/2');
-    const data = await response.json();
+    try {
+        const response = await fetch('https://fakestoreapi.com/carts/2');
+        const data = await response.json();
+    
+        const cartArray = transformArrays(data.products, products);
+    
+        
+        if (!response.ok) {
+            throw new Error('Сетевая ошибка')
+        }
 
-    const cartArray = transformArrays(data.products, products);
-
-    return cartArray;
+        return cartArray;
+        } catch (error) {
+            console.error('Ошибка', error);
+        }
 }
 
 async function transformArrays(data, products) {
@@ -180,30 +198,31 @@ async function removeFromCart(product) {
     const allProducts = await fetchData();
     const productsArray = await getUserCart(allProducts);
 
-    let productForDelete = productsArray.map(x =>{return x.id}).indexOf(product.id);
-    console.log(productForDelete);
+    let productForDelete = productsArray.map(numberOfItems => {
+        return numberOfItems.id
+    }).indexOf(product.id);
 
     productsArray.splice(productForDelete, 1);
 
-    console.log(productsArray);
     const productsArrayJSON = JSON.stringify(productsArray)
 
+    try {
+        const response = await fetch('https://fakestoreapi.com/carts/2', {
+            method: 'PUT',
+            body: productsArrayJSON
+        })
+    
+        if (!response.ok) {
+            throw new Error('Сетевая ошибка')
+        }
+    
+        if (response.status === 200) {
+            let text = `Товар ${product.title} удалён из корзины.`;
+    
+            notification(text);
+        }
 
-    const response = await fetch('https://fakestoreapi.com/carts/2',{
-        method: 'PUT',
-        body: productsArrayJSON
-    })
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        console.log(data.errors);
-        return;
-    }
-
-    if (response.status === 200) {
-        let text = `Товар ${product.title} удалён из корзины.`;
-
-        notification(text);
+    } catch(error) {
+        console.error('Ошибка', error);
     }
 }
