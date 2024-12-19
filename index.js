@@ -115,6 +115,9 @@ async function main() {
         outOfCart.forEach(createProductDOM);
         cart.forEach(createProductCartDOM);
     })
+
+    const filterButtonDOM = document.querySelector('.filter');
+    filterButtonDOM.addEventListener('click', filterPopup);
 }
 
 main()
@@ -140,7 +143,7 @@ async function addToCart(product) {
 
         if (response.status === 200) {
             let text = `Товар ${product.title} добавлен в корзину.`;
-    
+
             notification(text);
         }
 
@@ -165,19 +168,19 @@ function notification(text) {
 async function getUserCart(products) {
     try {
         const response = await fetch('https://fakestoreapi.com/carts/2');
-        const data = await response.json();
-    
-        const cartArray = transformArrays(data.products, products);
-    
-        
+
         if (!response.ok) {
             throw new Error('Сетевая ошибка')
         }
 
+        const data = await response.json();
+        const cartArray = transformArrays(data.products, products);
+
         return cartArray;
-        } catch (error) {
-            console.error('Ошибка', error);
-        }
+
+    } catch (error) {
+        console.error('Ошибка', error);
+    }
 }
 
 async function transformArrays(data, products) {
@@ -211,18 +214,83 @@ async function removeFromCart(product) {
             method: 'PUT',
             body: productsArrayJSON
         })
-    
+
         if (!response.ok) {
             throw new Error('Сетевая ошибка')
         }
-    
+
         if (response.status === 200) {
             let text = `Товар ${product.title} удалён из корзины.`;
-    
+
             notification(text);
         }
 
-    } catch(error) {
+    } catch (error) {
         console.error('Ошибка', error);
     }
+}
+
+async function filterPopup() {
+    try {
+        const response = await fetch('https://fakestoreapi.com/products/categories');
+
+        if (!response.ok) {
+            throw new Error('Сетевая ошибка');
+        }
+
+        const data = await response.json();
+        const filterPopupDOM = document.querySelector('.filter_popup');
+        const filterPopupTextDOM = document.querySelector('.filter_popup_text');
+
+        filterPopupDOM.classList.add('active');
+        filterPopupTextDOM.classList.add('active');
+
+        data.forEach(filterList);
+
+    } catch (error) {
+        console.error('Ошибка', error);
+    }
+}
+
+function filterList(data) {
+    const filterPopupTextDOM = document.querySelector('.filter_popup_text');
+    const filterItemDOM = document.createElement('button');
+    filterItemDOM.className = `filter_item`;
+    filterItemDOM.innerText = data;
+    filterItemDOM.addEventListener('click', () => {
+        filterItems(data);
+    });
+
+    filterPopupTextDOM.appendChild(filterItemDOM);
+}
+
+async function filterItems(category) {
+    try {
+        const response = await fetch(`https://fakestoreapi.com/products/category/${category}`);
+
+        if (!response.ok) {
+            throw new Error('Сетевая ошибка');
+        }
+
+        const data = await response.json();
+        const market = document.querySelector('.market');
+        market.innerHTML = '';
+
+        let products = data
+        let cart = await getUserCart(products);
+        let outOfCart = products.filter(e => cart.findIndex(i => i.id == e.id) === -1);
+
+        outOfCart.forEach(createProductDOM);
+        cart.forEach(createProductCartDOM);
+
+    } catch (error) {
+        console.error('Ошибка', error);
+    }
+
+    const filterPopupDOM = document.querySelector('.filter_popup');
+    const filterPopupTextDOM = document.querySelector('.filter_popup_text');
+
+    filterPopupDOM.classList.remove('active');
+    filterPopupTextDOM.classList.remove('active');
+    filterPopupTextDOM.innerHTML = '';
 }

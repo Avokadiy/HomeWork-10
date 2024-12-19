@@ -31,18 +31,59 @@ header {
     opacity: 50%;
 }
 
-.cart {
+.filter {
     padding: 20px;
     font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 5px;
+    font-weight: 900;
+    letter-spacing: 1px;
     border-radius: 30px;
     border: 0;
     color: white;
     background-color: black;
 }
 
-.cart:hover {
+.filter:hover {
+    opacity: 50%;
+}
+
+.filter_popup {
+    display: none;
+    position: fixed;
+    right: 100px;
+    top: 8px;
+    background-color: rgb(62, 168, 255);
+    height: 300px;
+    width: 220px;
+    border-radius: 20px;
+    box-shadow: 6px 6px 5px 6px #646464;
+}
+
+.filter_popup_text {
+    display: none;
+    flex-wrap: wrap;
+    position: fixed;
+    margin: auto;
+    justify-content: center;
+    font-size: 20px;
+    height: 290px;
+    width: 220px;
+}
+
+.filter_popup.active,
+.filter_popup_text.active {
+    display: flex;
+}
+
+.filter_item {
+    font-size: 25px;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 15px;
+    border: solid black 1px;
+    background-color: rgb(53, 212, 212);
+}
+
+.filter_item:hover {
     opacity: 50%;
 }
 
@@ -126,12 +167,11 @@ header {
     justify-content: center;
     text-align: center;
     font-size: 20px;
-    display: none;
 }
 
 .notification_add.active,
 .notification_text.active {
-    display: block;
+    display: flex;
 }
 
 .loadButton {
